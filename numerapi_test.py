@@ -1,6 +1,7 @@
 import unittest
 import os # Needed for getting environment variables, checking file exists
 import numerapi
+import numpy as np
 from datetime import datetime, timedelta 
 #NOTE: In order to run the tests,
 # You will need to have the following environment variables set:
@@ -140,7 +141,9 @@ class APIBasicRoutesTestCase(unittest.TestCase):
         # And that covers the main things.
 
     def test_get_current_competition(self):
-        self.assertTrue(False, "Code me!")
+        (dataset_id, comp_id, status) = self.napi.get_current_competition()
+        # Should be good:
+        self.assertEqual(status, 200, "Should return a successful status")
 
 
 # Test routes that requite a given username. 
@@ -154,32 +157,28 @@ class APIUsernameBasedTestCase(unittest.TestCase):
         (data, status) = self.napi.get_leaderboard()
         self.username = data[0][u'leaderboard'][0][u'username']
 
-
     def test_get_earnings_per_round(self):
-        # Need a username to get...
         (earnings,status) = self.napi.get_earnings_per_round(self.username)
         # Should be good:
         self.assertEqual(status, 200, "Should return a successful status")
-        # Earnings should have the following keys:
-        keys = [u'created',
-                u'earnings',
-                u'followers',
-                u'rewards',
-                u'submissions',
-                u'username',
-                u'_id']
-        for key in keys:
-            self.assertIn(key, earnings.keys(), "Earnings data should have key: " + key)
-        # There's no guarantee the user I picked has rewards....
+        # Should get a numpy array:
+        self.assertIsInstance(earnings, np.ndarray)
+        # Which should have at least 1 element for the leader:
+        self.assertTrue(len(earnings) > 0, "Leader has no earnings")
 
     def test_get_scores(self):
-        self.assertTrue(False, "Code me!")
+        (scores,status) = self.napi.get_earnings_per_round(self.username)
+        # Should be good:
+        self.assertEqual(status, 200, "Should return a successful status")
+        # Should get a numpy array:
+        self.assertIsInstance(scores, np.ndarray)
+        # Which should have at least 1 element for the leader:
+        self.assertTrue(len(scores) > 0, "Leader has no scores")
 
     def test_get_user(self):
-        self.assertTrue(False, "Code me!")
-
-
-
+        (username, logloss, rank, earned, status) = self.napi.get_user(self.username)
+        # Should be good:
+        self.assertEqual(status, 200, "Should return a successful status")
 
 
 if __name__ == '__main__':
